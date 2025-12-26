@@ -1,5 +1,5 @@
-github.com/GoAsyncFunc/uniproxy v0.0.2 h1:cTnPqEwMDCC0Wb6UGVUAygq16RzAAvtcf2AU67D/S1g=
-github.com/GoAsyncFunc/uniproxy v0.0.2/go.mod h1:Gc+oa+wun3+r5UCQQVsHjnp3hOzx/VbdW5h22lcyfMY=
+github.com/GoAsyncFunc/uniproxy v0.0.3 h1:dKitEqwuoMCehuTzBr58hKCJrkVU1bKgfa+yyP3yqXI=
+github.com/GoAsyncFunc/uniproxy v0.0.3/go.mod h1:Gc+oa+wun3+r5UCQQVsHjnp3hOzx/VbdW5h22lcyfMY=
 github.com/GoAsyncFunc/xray-core v0.0.0-20251225014554-36968909a1da h1:V7xxhZdV5ruDp03NjgJh+AUhUPEUMyExjHBI8aoxi5k=
 github.com/GoAsyncFunc/xray-core v0.0.0-20251225014554-36968909a1da/go.mod h1:HmMweKFbIRLwALo9cHVM6rrvQ+4DPbjXTAB9W00olAE=
 github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
