@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package goasyncfunc.server.skeleton.dispatcher;
+option csharp_namespace = "goasyncfunc.server.skeleton.dispatcher";
+option go_package = "github.com/GoAsyncFunc/server-skeleton/internal/pkg/dispatcher";
+option java_package = "com.goasyncfunc.server.skeleton.dispatcher";
+option java_multiple_files = true;
+
+message SessionConfig {
+  reserved 1;
+}
+
+message Config {
+  SessionConfig settings = 1;
+}
