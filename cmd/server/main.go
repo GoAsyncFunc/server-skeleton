@@ -18,7 +18,10 @@ import (
 )
 
 const (
-	Name      = "skeleton-node"
+	// Name is the application name.
+	// TODO: Change this to your specific project name, e.g., "vmess-node".
+	Name = "skeleton-node"
+
 	Version   = "0.0.1"
 	CopyRight = "GoAsyncFunc@2025"
 )
@@ -134,9 +137,10 @@ func main() {
 				Destination: &dataDir,
 			},
 			&cli.StringFlag{
-				Name:        "node_type",
-				Usage:       "Node type (only for skeleton testing, usually hardcoded in specific servers)",
-				EnvVars:     []string{"NODE_TYPE"},
+				Name:    "node_type",
+				Usage:   "Node type (only for skeleton testing, usually hardcoded in specific servers)",
+				EnvVars: []string{"NODE_TYPE"},
+				// TODO: Change this default value to your protocol name, e.g. "vmess", "hysteria"
 				Value:       "trojan",
 				DefaultText: "trojan",
 				Required:    false,

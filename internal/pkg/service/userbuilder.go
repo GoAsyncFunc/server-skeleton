@@ -9,8 +9,17 @@ import (
 	"github.com/xtls/xray-core/proxy/trojan"
 )
 
+// buildUser converts API user info to Xray protocol users.
+// IMPORTANT: This is an EXAMPLE implementation for TROJAN.
+// Developers MUST replace this with logic suitable for their target protocol.
 func buildUser(tag string, userInfo []api.UserInfo) (users []*protocol.User) {
+	// =================================================================================
+	// [EXAMPLE START] Trojan User Conversion
+	// Replace the code below with your protocol-specific logic.
+	// =================================================================================
+
 	for _, user := range userInfo {
+		// Trojan uses a password (which we map to user.Uuid here).
 		trojanAccount := &trojan.Account{
 			Password: user.Uuid,
 		}
@@ -22,6 +31,11 @@ func buildUser(tag string, userInfo []api.UserInfo) (users []*protocol.User) {
 		}
 		users = append(users, u)
 	}
+
+	// =================================================================================
+	// [EXAMPLE END]
+	// =================================================================================
+
 	return users
 }
 

@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	api "github.com/GoAsyncFunc/uniproxy/pkg"
 	"github.com/xtls/xray-core/core"
@@ -12,11 +11,19 @@ import (
 
 // InboundBuilder builds Inbound config.
 // IMPORTANT: This skeleton implementation defaults to TROJAN.
+// InboundBuilder builds Inbound config.
+// IMPORTANT: This is an EXAMPLE implementation using TROJAN.
+// Developers MUST replace this entire function body with the logic for their specific protocol.
 func InboundBuilder(config *Config, nodeInfo *api.NodeInfo) (*core.InboundHandlerConfig, error) {
-	// Trojan config from uniproxy NodeInfo
-	// Note: uniproxy NodeInfo contains *TrojanNode
+	// =================================================================================
+	// [EXAMPLE START] Trojan Protocol Implementation
+	// Replace the code below with your protocol-specific logic.
+	// =================================================================================
+
+	// 1. Validate Node Config
+	// Note: uniproxy NodeInfo contains protocol-specific fields (e.g., Trojan, Vmess, Vless).
+	// Ensure you check the correct field for your protocol.
 	if nodeInfo.Trojan == nil {
-		// Fallback or error if we expect Trojan
 		return nil, fmt.Errorf("node info missing Trojan config")
 	}
 	trojanInfo := nodeInfo.Trojan
@@ -28,47 +35,41 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo) (*core.InboundHandle
 
 	inboundDetourConfig := &conf.InboundDetourConfig{}
 
-	// Port
+	// 2. Configure Port
 	portList := &conf.PortList{
 		Range: []conf.PortRange{{From: uint32(trojanInfo.ServerPort), To: uint32(trojanInfo.ServerPort)}},
 	}
 	inboundDetourConfig.PortList = portList
 
-	// Tag
+	// 3. Configure Tag (Unique identifier for this inbound)
 	inboundDetourConfig.Tag = fmt.Sprintf("trojan_%d", trojanInfo.ServerPort)
 
-	// Sniffing
+	// 4. Configure Sniffing (Optional)
 	sniffingConfig := &conf.SniffingConfig{
 		Enabled: false,
 	}
-	if trojanInfo.BaseConfig != nil {
-		// uniproxy model might differ slightly, checking inspection again if needed.
-		// For now assume defaults or simple logic.
-	}
+	// Add sniffing logic here if needed...
 	inboundDetourConfig.SniffingConfig = sniffingConfig
 
-	// Protocol
+	// 5. Configure Protocol
 	inboundDetourConfig.Protocol = "trojan"
-	// conf.JSON is not exported or doesn't exist in recent xray-core conf package as a type we can cast to directly for Settings?
-	// Actually, settings in `conf` struct are usually `*json.RawMessage`.
-	// Let's check the definition of InboundDetourConfig.Settings.
-	// It is usually `*json.RawMessage`.
 
-	// Stream Settings
+	// 6. Configure Stream Settings (TCP, WebSocket, gRPC, etc.)
 	streamSetting = new(conf.StreamConfig)
 	inboundDetourConfig.StreamSetting = streamSetting
 
-	// Network
 	transportProtocol = conf.TransportProtocol(trojanInfo.Network)
-	if transportProtocol == "tcp" {
+	streamSetting.Network = &transportProtocol
+
+	switch transportProtocol {
+	case "tcp":
 		if len(trojanInfo.NetworkSettings) > 0 {
-			// Try parsing if specific settings exist
 			tcpConfig := new(conf.TCPConfig)
 			if err := json.Unmarshal(trojanInfo.NetworkSettings, tcpConfig); err == nil {
 				streamSetting.TCPSettings = tcpConfig
 			}
 		}
-	} else if transportProtocol == "grpc" {
+	case "grpc":
 		if len(trojanInfo.NetworkSettings) > 0 {
 			grpcConfig := new(conf.GRPCConfig)
 			if err := json.Unmarshal(trojanInfo.NetworkSettings, grpcConfig); err != nil {
@@ -78,7 +79,7 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo) (*core.InboundHandle
 		} else {
 			streamSetting.GRPCSettings = &conf.GRPCConfig{}
 		}
-	} else if transportProtocol == "ws" {
+	case "ws":
 		if len(trojanInfo.NetworkSettings) > 0 {
 			wsConfig := new(conf.WebSocketConfig)
 			if err := json.Unmarshal(trojanInfo.NetworkSettings, wsConfig); err != nil {
@@ -88,9 +89,10 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo) (*core.InboundHandle
 		}
 	}
 
-	// TLS
-	tlsSettings := new(conf.TLSConfig) // conf.TLSConfig uses Certs []*conf.TLSCertConfig (based on debug output)
-	if nodeInfo.Security == 1 {        // TLS
+	// 7. Configure Security (TLS, Reality, etc.)
+	tlsSettings := new(conf.TLSConfig)
+	switch nodeInfo.Security {
+	case 1: // TLS
 		streamSetting.Security = "tls"
 		tlsSettings.Certs = []*conf.TLSCertConfig{
 			{
@@ -99,24 +101,16 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo) (*core.InboundHandle
 			},
 		}
 		streamSetting.TLSSettings = tlsSettings
-	} else if nodeInfo.Security == 2 { // REALITY
+	case 2: // REALITY
 		streamSetting.Security = "reality"
-		// Reality logic...
+		// Add Reality configuration logic here...
 	}
 
-	// Set network
-	streamSetting.Network = &transportProtocol
-
-	// Users - Handled by service.AddUser dynamically usually, but for init we can add if logic allows
-	// In Main builder it will add users. Here we just set up the handler skeleton.
-	// However, Xray usually needs at least one user or Fallback?
-	// Trojan protocol settings:
+	// 8. Configure Protocol Settings (Clients, Fallbacks, etc.)
+	// Xray usually requires at least one user or fallback.
+	// Users are typically added dynamically by UserBuilder, but you can set defaults here.
 	clients := []json.RawMessage{}
-	// We leave clients empty here as Builder.Start will populate them using UserManager
 
-	// Construct generic Trojan settings
-	// Since we are using conf.JSON for settings which is raw bytes, we need to construct it properly
-	// or use a helper struct to marshal.
 	type Fallback struct {
 		Alpn string          `json:"alpn,omitempty"`
 		Path string          `json:"path,omitempty"`
@@ -134,17 +128,9 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo) (*core.InboundHandle
 	settingsJSON := json.RawMessage(settingsBytes)
 	inboundDetourConfig.Settings = &settingsJSON
 
-	return inboundDetourConfig.Build()
-}
+	// =================================================================================
+	// [EXAMPLE END]
+	// =================================================================================
 
-func stringSliceToPortList(s []string) *conf.PortList {
-	var portList conf.PortList
-	for _, p := range s {
-		port, err := strconv.Atoi(p)
-		if err != nil {
-			continue
-		}
-		portList.Range = append(portList.Range, conf.PortRange{From: uint32(port), To: uint32(port)})
-	}
-	return &portList
+	return inboundDetourConfig.Build()
 }
